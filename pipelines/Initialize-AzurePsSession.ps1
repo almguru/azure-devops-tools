@@ -1,4 +1,3 @@
- #requires -version 7
 <#
 .SYNOPSIS
     Initializes PowerShell session to work with Azure Subscription.
@@ -10,8 +9,11 @@
     List of additional PowerShell modules to be installed.
 
 .EXAMPLE    
-    Initialize-AzurePsSession -AdditionalModules "Az.Storage"
+    Initialize-AzurePsSession [-AdditionalModules "Az.Storage"]
 #>
+
+#requires -version 7
+
 Param
 (    
     [parameter(Mandatory = $false, Position = 1)]
