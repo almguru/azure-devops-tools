@@ -20,12 +20,21 @@ this script creates service account and secret and returns cluster name, URL and
 There is a [AzureCLI@2][azureclitask] task in Azure Pipelines that can be used to run Azure CLI commands. However, it does not initialize Azure context if you want use PowerShell Az.* modules. This is a workaround to initialize Azure context in Azure Pipelines.
 
 ```powershell
-./pipelines/Initialize-AzurePsSession.ps1 [-AdditionalModules "Az.Storage"]
+./pipelines/Initialize-AzurePsSession [-AdditionalModules "Az.Storage"]
 ```
 
-See [Initialize-AzurePsSession.ps1](pipelines/Initialize-AzurePsSession.ps1) for implementation details. You may also see help information by running:
+See [Initialize-AzurePsSession.ps1](pipelines/Initialize-AzurePsSession.ps1) for implementation details. Run the following command to see help information:
+
 ```powershell
-Get-Help ./pipelines/Initialize-AzurePsSession.ps1
+Get-Help ./pipelines/Initialize-AzurePsSession -Detailed
 ```
 
 [azureclitask]: https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/azure-cli-v2?view=azure-pipelines
+
+## Populate iterations in Azure Boards
+
+This tool helps you to populate iterations in Azure Boards. it creates iterations in Azure DevOps project using existing naming convention and duration. Run the following command to see help information:
+
+```powershell
+Get-Help ./boards/New-Iterations -Detailed
+```
