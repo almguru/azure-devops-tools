@@ -21,6 +21,9 @@
 .PARAMETER LastIterationName
     Name of the last iteration in the project. This iteration will be used to learn naming convention and duration of the iteration.
 
+.PARAMETER AllowUpdatingExistingIterations
+    If set to true, script will update existing iterations instead of creating new ones. The iterations will be created only if they do not exist.
+
 .EXAMPLE    
     New-Iterations -OrgUrl https://dev.azure.com/myorg -ProjectName Checkers -IterationsToCreate 100 -LastIterationName "Sprint 20"
 
@@ -33,15 +36,21 @@ Param
     [parameter(Mandatory=$true)]
     [String]
     $OrgUrl,
+    
     [parameter(Mandatory=$true)]
     [String]
     $ProjectName,
+    
     [parameter(Mandatory=$true)]
     [String]
     $IterationsToCreate,
+    
     [parameter(Mandatory=$true)]
     [String]
-    $LastIterationName
+    $LastIterationName,
+
+    [switch]
+    $AllowUpdatingExistingIterations=$false
     )
 
 $iterationsToCreate = $IterationsToCreate
@@ -65,15 +74,32 @@ $startDate = $lastIteration.attributes.startDate
 $iterationLength = $lastIteration.attributes.finishDate - $lastIteration.attributes.startDate
 $iterationCycle = [TimeSpan]::FromDays([convert]::ToInt32($iterationLength.Days / 7) * 7)
 
-Write-Debug "Start date: $startDate"
-Write-Debug "Iteration length: $iterationLength"
-Write-Debug "Iteration cycle: $iterationCycle"
-Write-Debug "Base name: $baseName"
-Write-Debug "Parent pathname: $parentIteration"
-Write-Debug "First iteration number: $firstIterationNumber"
+Write-Information "Start date: $startDate"
+Write-Information "Iteration length: $iterationLength"
+Write-Information "Iteration cycle: $iterationCycle"
+Write-Information "Base name: $baseName"
+Write-Information "Parent pathname: $parentIteration"
+Write-Information "First iteration number: $firstIterationNumber"
 
 for ($i=0; $i -lt $iterationsToCreate; $i++)
 {
     $startDate += $iterationCycle
-    az boards iteration project create --org "$OrgUrl" -p "$ProjectName" --path "$parentIteration" --name ($baseName + ($firstIterationNumber + $i).ToString("D2")) --start-date $startDate --finish-date ($startDate + $iterationLength) -o json
+    $iterationName = $baseName + ($firstIterationNumber + $i).ToString("D2")
+    
+    Write-Information "Creating iteration $($iterationName)"
+
+    az boards iteration project create --org "$($OrgUrl)" -p "$($ProjectName)" --path "$($parentIteration)" --name "$($iterationName)" -o json
+    if (-not $? -and -not $AllowUpdatingExistingIterations)
+    {
+        Write-Error "Unable to create iteration '$($iterationName)'. Error code: $($LASTEXITCODE))" -ErrorAction Stop
+    }
+
+    $iterationPath = $parentIteration + '\' + $iterationName
+
+    Write-information "Updating iteration $($iterationPath) start date and finish date with '$($startDate)' and '$($startDate + $iterationLength)'"
+    az boards iteration project update --org "$($OrgUrl)" -p "$($ProjectName)" --path "$($iterationPath)" --start-date $startDate --finish-date ($startDate + $iterationLength) -o json
+    if (-not $?)
+    {
+        Write-Error "Unable to update iteration '$($iterationPath)'. Error code: $($LASTEXITCODE))" -ErrorAction Stop
+    }
 }
