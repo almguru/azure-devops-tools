@@ -68,7 +68,7 @@ Write-Information "*** Updating permission for project '$($ProjectName)' and rep
 Invoke-ShellCommand "$($tf) $($commonOptions) /group:`"$($adminGroupName)`" /allow:CreateBranch"
 Invoke-ShellCommand "$($tf) $($commonOptions) /group:`"$($contributorGroupName)`" /deny:CreateBranch"
 
-$allowedBranches = @("feature", "release", "hotfix", "bugfix", "support")
+$allowedBranches = @("feature", "release", "hotfix", "bugfix", "support", 'dependabot')
 
 $allowedBranches | ForEach-Object {
     Invoke-ShellCommand "$($tf) $($commonOptions) /group:`"$($contributorGroupName)`" /allow:CreateBranch /branch:$($_)"
