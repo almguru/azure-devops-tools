@@ -30,6 +30,19 @@ param (
 
 $InformationPreference = "Continue"
 
+
+function Write-CommandLog {
+    param (
+        [Parameter(Mandatory, Position = 0)]
+        [string]
+        $Command
+    )
+    
+    $tfPrefix = if ($env:TF_BUILD) { "##[command]" } else { "" }
+
+    Write-Host -ForegroundColor 'cyan' "$tfPrefix$Command"
+}
+
 function Invoke-ShellCommand {
     param (
         [Parameter(Mandatory, Position = 0)]
@@ -37,7 +50,7 @@ function Invoke-ShellCommand {
         $Command
     )
 
-    Write-Host -ForegroundColor 'cyan' "$Command"
+    Write-CommandLog $Command
     Invoke-Expression "& $($Command)"
     if (-not $?) {
         Write-Error "Failed to invoke shell command. Exit code: $($LastExitCode)"
