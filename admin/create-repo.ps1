@@ -101,8 +101,10 @@ function Write-CommandLog {
         [string]
         $Command
     )
+    
+    $tfPrefix = if ($env:TF_BUILD) { "##[command]" } else { "" }
 
-    Write-Host -ForegroundColor 'cyan' "##[command]$Command"
+    Write-Host -ForegroundColor 'cyan' "$tfPrefix$Command"
 }
 
 function Invoke-Az {
